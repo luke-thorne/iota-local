@@ -40,6 +40,31 @@ services:
       - 9312/tcp # prometheus
     networks:
       - shimmer
+  peer_replica:
+    image: iotaledger/goshimmer:${GOSHIMMER_TAG:-develop}
+    stop_grace_period: 1m
+    command: >
+      --config=/run/secrets/goshimmer.config.json
+      --database.directory=/tmp/mainnetdb
+      --node.enablePlugins=bootstrap,"webapi tools endpoint"
+      --messageLayer.snapshot.file=/run/secrets/goshimmer.message.snapshot.bin
+      --messageLayer.snapshot.genesisNode=
+      --node.disablePlugins=portcheck,clock
+      --mana.snapshotResetTime=true
+      --statement.writeStatement=true
+      --statement.writeManaThreshold=1.0
+      --webapi.exportPath=/tmp/
+    deploy:
+      replicas: ${SHIMMER_PEER_REPLICAS:-1}
+    secrets:
+      - goshimmer.config.json
+      - goshimmer.message.snapshot.bin
+    expose:
+      - "8080/tcp" # web API (within Docker network)
+    networks:
+      - shimmer
+    depends_on:
+      - peer_master
   faucet:
     image: iotaledger/goshimmer:${GOSHIMMER_TAG:-develop}
     stop_grace_period: 1m
@@ -62,31 +87,6 @@ services:
       - goshimmer.message.snapshot.bin
     ports:
       - "8081:8081/tcp" # dashboard
-    expose:
-      - "8080/tcp" # web API (within Docker network)
-    networks:
-      - shimmer
-    depends_on:
-      - peer_master
-  peer_replica:
-    image: iotaledger/goshimmer:${GOSHIMMER_TAG:-develop}
-    stop_grace_period: 1m
-    command: >
-      --config=/run/secrets/goshimmer.config.json
-      --database.directory=/tmp/mainnetdb
-      --node.enablePlugins=bootstrap,"webapi tools endpoint"
-      --messageLayer.snapshot.file=/run/secrets/goshimmer.message.snapshot.bin
-      --messageLayer.snapshot.genesisNode=
-      --node.disablePlugins=portcheck,clock
-      --mana.snapshotResetTime=true
-      --statement.writeStatement=true
-      --statement.writeManaThreshold=1.0
-      --webapi.exportPath=/tmp/
-    deploy:
-      replicas: ${SHIMMER_PEER_REPLICAS:-1}
-    secrets:
-      - goshimmer.config.json
-      - goshimmer.message.snapshot.bin
     expose:
       - "8080/tcp" # web API (within Docker network)
     networks:

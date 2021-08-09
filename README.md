@@ -13,7 +13,16 @@
 		- [Example](#example-2)
 		- [Ports](#ports-2)
 - [Optional components](#optional-components)
-	- [Grafana](#grafana)
+	- [Grafana + Prometheus + MongoDB](#grafana--prometheus--mongodb)
+		- [Profile](#profile)
+		- [Configuration](#configuration-3)
+		- [Example](#example-3)
+		- [Ports](#ports-3)
+	- [DRNG](#drng)
+		- [Profile](#profile-1)
+		- [Configuration](#configuration-4)
+		- [Example](#example-4)
+		- [Ports](#ports-4)
 
 # Local GoShimmer
 
@@ -101,4 +110,61 @@ The following ports are exposed on the host to allow for interacting with the Ta
 
 These services can be added to your deployment through `--profile` flags and can be configured with `ENVIRONMENT_VARIABLES`.
 
-## Grafana
+## Grafana + Prometheus + MongoDB
+
+A set of containers to enable dashboards and monitoring.
+
+### Profile
+
+In order to enable these containers you must set the `--profile grafana` flag when running `docker-compose`.
+
+### Configuration
+
+- MONGO_DB_ENABLED: __(REQUIRED)__ Determines if the analysis tools should use a MongoDB instance for storing analysis data and configures the `peer_master` to use MongoDB for analysis storage. Defaults to `false`.
+
+### Example
+
+You can set the environment variable configuration inline as seen in this example.
+
+```bash
+MONGO_DB_ENABLED=true docker-compose --profile grafana up -d
+```
+
+### Ports
+
+The following ports are exposed on the host to allow for interacting with the Tangle.
+
+| Port | Service |
+|------|---------|
+| 3000/tcp | Grafana | 
+| 9090/tcp | Prometheus | 
+
+## DRNG
+
+Distributed randomness beacon.
+Verifiable, unpredictable and unbiased random numbers as a service.
+
+### Profile
+
+In order to enable these containers you must set the `--profile drng` flag when running `docker-compose`.
+
+### Configuration
+
+- DRNG_REPLICAS: (Optional) How many nodes to create in addition to the DRNG leader. Defaults to 2.
+
+### Example
+
+You can set the environment variable configuration inline as seen in this example.
+
+```bash
+docker-compose --profile drng up -d
+```
+
+### Ports
+
+The following ports are exposed on the host to allow for interacting with the Tangle.
+
+| Port | Service |
+|------|---------|
+| 8000/tcp | Drand Control | 
+| 8800/tcp | GoShimmer API | 
